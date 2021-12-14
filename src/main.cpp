@@ -1,6 +1,7 @@
 #include <string>
 
 #include "util.hpp"
+#include "graph_view.hpp"
 #include "ne_partitioner.hpp"
 #include "sne_partitioner.hpp"
 #include "random_partitioner.hpp"
@@ -39,10 +40,22 @@ int main(int argc, char *argv[])
     Timer timer;
     timer.start();
 
+    FileGraph *fgraph = NULL;
     Partitioner *partitioner = NULL;
-    if (FLAGS_method == "ne")
-        partitioner = new NePartitioner(FLAGS_filename);
-    else if (FLAGS_method == "sne")
+    if (FLAGS_method == "ne") {
+        fgraph = makeFileGraph<FileGraphCOO>(FLAGS_filename);
+        auto graph = (FileGraphCOO *)fgraph;
+
+        LOG(INFO) << "initializing partitioner";
+        partitioner = new NePartitioner<GraphViewCOO>(
+            graph->basefilename, graph->num_vertices, graph->num_edges,
+            GraphViewCOO(graph->row, graph->col), graph->degrees, FLAGS_p);
+        // TODO: segfault with GraphViewRawCOO, why?
+        // partitioner = new NePartitioner<GraphViewRawCOO>(
+        //     graph->basefilename, graph->num_vertices, graph->num_edges,
+        //     GraphViewRawCOO(&graph->row[0], &graph->col[0], graph->row.size()), graph->degrees, FLAGS_p);
+
+    } else if (FLAGS_method == "sne")
         partitioner = new SnePartitioner(FLAGS_filename);
     else if (FLAGS_method == "random")
         partitioner = new RandomPartitioner(FLAGS_filename);
@@ -57,4 +70,7 @@ int main(int argc, char *argv[])
 
     timer.stop();
     LOG(INFO) << "total time: " << timer.get_time();
+
+    delete partitioner;
+    delete fgraph;
 }

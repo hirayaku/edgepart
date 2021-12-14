@@ -1,4 +1,6 @@
 release/
 debug/
+build/
+tags
 *.pyc
 .DS_Store

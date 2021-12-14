@@ -9,4 +9,5 @@ class Partitioner
 
   public:
     virtual void split() = 0;
+    virtual ~Partitioner() {}
 };

@@ -3,9 +3,10 @@ project (edgepart)
 
 set(CMAKE_VERBOSE_MAKEFILE off)
 
-# find_package (glog REQUIRED)
-# find_package (gflags REQUIRED)
-# find_package (Boost REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+find_package (Gflags REQUIRED)
+find_package (Glog REQUIRED)
+find_package (Boost REQUIRED)
 
 # SET a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -27,7 +28,6 @@ add_executable (main
     src/util.cpp
     src/sort.cpp
     src/graph.cpp
-    src/ne_partitioner.cpp
     src/sne_partitioner.cpp
     src/random_partitioner.cpp
     src/hsfc_partitioner.cpp
