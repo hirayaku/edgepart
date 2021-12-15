@@ -43,18 +43,19 @@ int main(int argc, char *argv[])
     FileGraph *fgraph = NULL;
     Partitioner *partitioner = NULL;
     if (FLAGS_method == "ne") {
-        fgraph = makeFileGraph<FileGraphCOO>(FLAGS_filename);
-        auto graph = (FileGraphCOO *)fgraph;
+        using FileGraphT = FileGraphCOO;
+        fgraph = makeFileGraph<FileGraphT>(FLAGS_filename);
+        auto graph = (FileGraphT *)fgraph;
 
         LOG(INFO) << "initializing partitioner";
-        partitioner = new NePartitioner<GraphViewCOO>(
+        partitioner = new NePartitioner<FileGraphT::GraphViewT>(
             graph->basefilename, graph->num_vertices, graph->num_edges,
-            GraphViewCOO(graph->row, graph->col), graph->degrees, FLAGS_p);
-        // TODO: segfault with GraphViewRawCOO, why?
+            graph->get_view(), graph->degrees, FLAGS_p);
+
+        // GraphViewRawCOO view(graph->row.data(), graph->col.data(), graph->row.size());
         // partitioner = new NePartitioner<GraphViewRawCOO>(
         //     graph->basefilename, graph->num_vertices, graph->num_edges,
-        //     GraphViewRawCOO(&graph->row[0], &graph->col[0], graph->row.size()), graph->degrees, FLAGS_p);
-
+        //     view, graph->degrees, FLAGS_p);
     } else if (FLAGS_method == "sne")
         partitioner = new SnePartitioner(FLAGS_filename);
     else if (FLAGS_method == "random")

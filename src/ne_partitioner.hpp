@@ -177,6 +177,7 @@ class NePartitioner : public Partitioner
     : basefilename(basefilename), num_vertices(num_v), num_edges(num_e)
     , edges(std::move(edges)), degrees(degrees), p(p), rd(), gen(rd()), writer(basefilename)
     {
+        // LOG(INFO) << "GraphViewT obj moved through lvalue ref";
         CHECK_EQ(this->edges.size(), num_edges);
         CHECK_EQ(this->degrees.size(), num_vertices);
         this->init();
@@ -186,6 +187,7 @@ class NePartitioner : public Partitioner
     : basefilename(basefilename), num_vertices(num_v), num_edges(num_e)
     , edges(std::move(edges)), degrees(degrees), p(p), rd(), gen(rd()), writer(basefilename)
     {
+        // LOG(INFO) << "GraphViewT obj moved through rvalue";
         CHECK_EQ(this->edges.size(), num_edges);
         CHECK_EQ(this->degrees.size(), num_vertices);
         this->init();
@@ -196,7 +198,7 @@ class NePartitioner : public Partitioner
 
 template <typename GraphViewT>
 void NePartitioner<GraphViewT>::init() {
-    // copied from NePartitioner(std::string): allocate memory
+    // copied from original NePartitioner(std::string)
     average_degree = (double)num_edges * 2 / num_vertices;
     assigned_edges = 0;
     capacity = (double)num_edges * BALANCE_RATIO / p + 1;

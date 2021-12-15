@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <memory>
 #include "dense_bitset.hpp"
@@ -40,7 +42,7 @@ class GraphViewEdgeList
     GraphViewEdgeList(GraphViewEdgeList &) = delete;
     GraphViewEdgeList(GraphViewEdgeList &&that)
     : edges(that.edges), valid_bits(std::move(that.valid_bits))
-    {}
+    { /* LOG(INFO) << "GraphViewEdgeList gets moved"; */ }
     GraphViewEdgeList(const std::vector<edge_t> &edges)
     : edges(edges), valid_bits(new dense_bitset(edges.size()))
     { valid_bits->fill(); }
@@ -86,7 +88,7 @@ class GraphViewCOO
     GraphViewCOO(GraphViewCOO &) = delete;
     GraphViewCOO(GraphViewCOO &&that)
     : src(that.src), dst(that.dst), valid_bits(std::move(that.valid_bits))
-    {}
+    { /* LOG(INFO) << "GraphViewCOO gets moved"; */ }
     GraphViewCOO(const std::vector<vid_t> &src, const std::vector<vid_t> &dst)
     : src(src), dst(dst), valid_bits(new dense_bitset(src.size()))
     {
@@ -102,8 +104,9 @@ class GraphViewCOO
 class GraphViewRawCOO
 {
   private:
-    const vid_t *&src;
-    const vid_t *&dst;
+    // TODO: segfault if we use `const vid_t *const &` here, why?
+    const vid_t *src;
+    const vid_t *dst;
     const size_t array_len;
     std::unique_ptr<dense_bitset> valid_bits;
   
@@ -137,8 +140,8 @@ class GraphViewRawCOO
     GraphViewRawCOO(GraphViewRawCOO &&that)
     : src(that.src), dst(that.dst), array_len(that.array_len)
     , valid_bits(std::move(that.valid_bits))
-    {}
-    GraphViewRawCOO(const vid_t *src, const vid_t *dst, const size_t array_len)
+    { /* LOG(INFO) << "GraphViewRawCOO gets moved"; */ }
+    GraphViewRawCOO(const vid_t * const&src, const vid_t * const&dst, const size_t array_len)
     : src(src), dst(dst), array_len(array_len)
     , valid_bits(new dense_bitset(array_len))
     { valid_bits->fill(); }

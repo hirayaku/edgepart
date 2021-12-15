@@ -45,7 +45,7 @@ void graph_t::build_reverse(const std::vector<edge_t> &edges)
 }
 */
 
-void FileGraphEdgelist::load()
+void FileGraphEdgeList::load()
 {
     // converter outputs 2 files
     // - vid is consecutive, starting from 0
@@ -85,6 +85,11 @@ void FileGraphEdgelist::load()
     degree_file.close();
     read_timer.stop();
     LOG(INFO) << "load time: " << read_timer.get_time();
+}
+
+FileGraphEdgeList::GraphViewT FileGraphEdgeList::get_view()
+{
+    return GraphViewT(this->edges);
 }
 
 void FileGraphCOO::load()
@@ -134,4 +139,9 @@ void FileGraphCOO::load()
     degree_file.close();
     read_timer.stop();
     LOG(INFO) << "load time: " << read_timer.get_time();
+}
+
+FileGraphCOO::GraphViewT FileGraphCOO::get_view()
+{
+    return GraphViewT(this->row, this->col);
 }

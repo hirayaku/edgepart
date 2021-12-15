@@ -4,7 +4,7 @@
 #include <memory>
 #include <parallel/algorithm>
 
-#include "dense_bitset.hpp"
+#include "graph_view.hpp"
 #include "util.hpp"
 
 // TODO: don't use 40bits - could be insufficient soon in the future
@@ -123,19 +123,22 @@ struct FileGraph
   virtual void load() = 0; // must specify how to load data from the file
 };
 
-struct FileGraphEdgelist : public FileGraph
+struct FileGraphEdgeList : public FileGraph
 {
+  using GraphViewT = GraphViewEdgeList;
   vid_t num_vertices;
   size_t num_edges;
   std::vector<edge_t> edges;
   std::vector<vid_t> degrees;
 
-  FileGraphEdgelist(std::string basefilename): FileGraph(basefilename) {}
+  FileGraphEdgeList(std::string basefilename): FileGraph(basefilename) {}
   virtual void load();
+  GraphViewT get_view();
 };
 
 struct FileGraphCOO : public FileGraph
 {
+  using GraphViewT = GraphViewCOO;
   vid_t num_vertices;
   size_t num_edges;
   std::vector<vid_t> row;
@@ -144,6 +147,7 @@ struct FileGraphCOO : public FileGraph
 
   FileGraphCOO(std::string basefilename): FileGraph(basefilename) {}
   virtual void load();
+  GraphViewT get_view();
 };
 
 // struct FileGraphMemmap: public FileGraph
