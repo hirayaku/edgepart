@@ -47,15 +47,11 @@ int main(int argc, char *argv[])
         fgraph = makeFileGraph<FileGraphT>(FLAGS_filename);
         auto graph = (FileGraphT *)fgraph;
 
-        LOG(INFO) << "initializing partitioner";
         partitioner = new NePartitioner<FileGraphT::GraphViewT>(
-            graph->basefilename, graph->num_vertices, graph->num_edges,
-            graph->get_view(), graph->degrees, FLAGS_p);
+            graph->num_vertices, graph->num_edges, graph->get_view(), FLAGS_p);
 
-        // GraphViewRawCOO view(graph->row.data(), graph->col.data(), graph->row.size());
-        // partitioner = new NePartitioner<GraphViewRawCOO>(
-        //     graph->basefilename, graph->num_vertices, graph->num_edges,
-        //     view, graph->degrees, FLAGS_p);
+        // EdgePart_PartGraphCOO(graph->num_vertices, graph->num_edges,
+        //     graph->row.data(), graph->col.data(), FLAGS_p);
     } else if (FLAGS_method == "sne")
         partitioner = new SnePartitioner(FLAGS_filename);
     else if (FLAGS_method == "random")

@@ -13,7 +13,7 @@
 
 #include "util.hpp"
 #include "dense_bitset.hpp"
-#include "edgepart.hpp"
+#include "edgepart_writer.hpp"
 #include "partitioner.hpp"
 
 class HsfcPartitioner : public Partitioner
@@ -22,6 +22,8 @@ class HsfcPartitioner : public Partitioner
     const size_t BUFFER_SIZE = 64 * 1024 / sizeof(edge_t);
     std::string basefilename;
 
+    // HsfcPartitioner requires uint32_t types for vid_t
+    using vid_t = uint32_t;
     vid_t num_vertices;
     size_t num_edges;
     int p;

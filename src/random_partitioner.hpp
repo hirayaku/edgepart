@@ -13,7 +13,7 @@
 
 #include "util.hpp"
 #include "dense_bitset.hpp"
-#include "edgepart.hpp"
+#include "edgepart_writer.hpp"
 #include "partitioner.hpp"
 
 class RandomPartitioner : public Partitioner

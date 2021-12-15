@@ -5,8 +5,6 @@
 #include <cstring>
 #include <stdint.h>
 
-#include "util.hpp"
-
 class dense_bitset
 {
   public:

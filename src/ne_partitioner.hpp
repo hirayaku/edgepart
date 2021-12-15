@@ -10,10 +10,9 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include "util.hpp"
+#include "edgepart.hpp"
 #include "min_heap.hpp"
 #include "dense_bitset.hpp"
-#include "edgepart.hpp"
 #include "partitioner.hpp"
 #include "graph.hpp"
 
@@ -24,15 +23,13 @@ class NePartitioner : public Partitioner
   private:
     const double BALANCE_RATIO = 1.00;
 
-    std::string basefilename;
-
     vid_t num_vertices;
     size_t num_edges, assigned_edges;
     double average_degree;
     size_t capacity;
 
-    // TODO: we need to make NePartitioner work on CSR format graph
-    // if GNN training performance is sufficiently good
+    // TODO: we should make NePartitioner work with CSR format graph
+    // TODO: we should make NePartitioner work with symmetrized graph in COO format, if supporting CSR is difficult
     GraphViewT edges;
     graph_t adj_out, adj_in;
 
@@ -47,8 +44,10 @@ class NePartitioner : public Partitioner
     std::mt19937 gen;
     std::uniform_int_distribution<vid_t> dis;
 
-    edgepart_writer<vid_t, uint16_t> writer;
+    std::vector<std::vector<vid_t>> vertex_sets;
 
+    // TODO: what's the purpose of this? might as well remove it
+    #if 0
     int check_edge(const edge_t *e)
     {
         rep (i, bucket) {
@@ -75,14 +74,15 @@ class NePartitioner : public Partitioner
 
         return p;
     }
+    #endif
 
     void assign_edge(int bucket, vid_t from, vid_t to)
     {
-        writer.save_edge(from, to, bucket);
+        // writer.save_edge(from, to, bucket);
         assigned_edges++;
         occupied[bucket]++;
-        degrees[from]--;
-        degrees[to]--;
+        // degrees[from]--;
+        // degrees[to]--;
     }
 
     void add_boundary(vid_t vid)
@@ -168,31 +168,29 @@ class NePartitioner : public Partitioner
 
     void assign_remaining();
     void assign_master();
-    size_t count_mirrors();
+    size_t collect_mirrors();
 
     void init();
   public:
-    NePartitioner(std::string basefilename, vid_t num_v, size_t num_e,
-        GraphViewT &edges, std::vector<vid_t> degrees, int p)
-    : basefilename(basefilename), num_vertices(num_v), num_edges(num_e)
-    , edges(std::move(edges)), degrees(degrees), p(p), rd(), gen(rd()), writer(basefilename)
+    NePartitioner(vid_t num_v, size_t num_e, GraphViewT &edges, int p)
+    : num_vertices(num_v), num_edges(num_e), edges(std::move(edges))
+    , p(p), rd(), gen(rd())
     {
         // LOG(INFO) << "GraphViewT obj moved through lvalue ref";
-        CHECK_EQ(this->edges.size(), num_edges);
-        CHECK_EQ(this->degrees.size(), num_vertices);
+        LOG(INFO) << "initializing partitioner";
         this->init();
     }
-    NePartitioner(std::string basefilename, vid_t num_v, size_t num_e,
-        GraphViewT &&edges, std::vector<vid_t> degrees, int p)
-    : basefilename(basefilename), num_vertices(num_v), num_edges(num_e)
-    , edges(std::move(edges)), degrees(degrees), p(p), rd(), gen(rd()), writer(basefilename)
+    NePartitioner(vid_t num_v, size_t num_e, GraphViewT &&edges, int p)
+    : num_vertices(num_v), num_edges(num_e), edges(std::move(edges))
+    , p(p), rd(), gen(rd())
     {
-        // LOG(INFO) << "GraphViewT obj moved through rvalue";
-        CHECK_EQ(this->edges.size(), num_edges);
-        CHECK_EQ(this->degrees.size(), num_vertices);
+        // LOG(INFO) << "GraphViewT obj moved through lvalue ref";
+        LOG(INFO) << "initializing partitioner";
         this->init();
     }
-
+    std::vector<std::vector<vid_t>> get_vertex_sets() {
+        return this->vertex_sets;
+    }
     void split();
 };
 
@@ -209,6 +207,7 @@ void NePartitioner<GraphViewT>::init() {
     is_boundarys.assign(p, dense_bitset(num_vertices));
     master.assign(num_vertices, -1);
     dis.param(std::uniform_int_distribution<vid_t>::param_type(0, num_vertices - 1));
+    vertex_sets.resize(p);
 
     // populate adj_in & adj_out
     Timer read_timer;
@@ -257,18 +256,20 @@ void NePartitioner<GraphViewT>::assign_master()
     vid_t count = 0;
     while (count < num_vertices) {
         long long r = distribution(gen) * sum;
+        // sample k with weights defined by quota[0, ..., p-1]
         int k;
         for (k = 0; k < p; k++) {
             if (r < quota[k])
                 break;
             r -= quota[k];
         }
+        // find the next unassigned vertex in partition k
         while (pos[k] != is_boundarys[k].end() && master[*pos[k]] != -1)
             pos[k]++;
         if (pos[k] != is_boundarys[k].end()) {
             count++;
             master[*pos[k]] = k;
-            writer.save_vertex(*pos[k], k);
+            // writer.save_vertex(*pos[k], k);
             count_master[k]++;
             quota[k]--;
             sum--;
@@ -281,18 +282,20 @@ void NePartitioner<GraphViewT>::assign_master()
 }
 
 template <typename GraphViewT>
-size_t NePartitioner<GraphViewT>::count_mirrors()
+size_t NePartitioner<GraphViewT>::collect_mirrors()
 {
     size_t result = 0;
-    rep (i, p)
+    rep (i, p) {
         result += is_boundarys[i].popcount();
+        for (auto v : is_boundarys[i])
+            vertex_sets[i].push_back(v);
+    }
     return result;
 }
 
 template <typename GraphViewT>
 void NePartitioner<GraphViewT>::split()
 {
-    LOG(INFO) << "partition `" << basefilename << "'";
     LOG(INFO) << "number of partitions: " << p;
 
     Timer compute_timer;
@@ -301,6 +304,7 @@ void NePartitioner<GraphViewT>::split()
 
     LOG(INFO) << "partitioning...";
     compute_timer.start();
+    // generate the first p-1 partitions in serial
     for (bucket = 0; bucket < p - 1; bucket++) {
         std::cerr << bucket << ", ";
         DLOG(INFO) << "sample size: " << adj_out.num_edges();
@@ -335,17 +339,26 @@ void NePartitioner<GraphViewT>::split()
                 }
             }
     }
+    // generate the last partition
     bucket = p - 1;
     std::cerr << bucket << std::endl;
     assign_remaining();
-    assign_master();
+    // assign_master();
     compute_timer.stop();
+
     LOG(INFO) << "expected edges in each partition: " << num_edges / p;
     rep (i, p)
         DLOG(INFO) << "edges in partition " << i << ": " << occupied[i];
     size_t max_occupied = *std::max_element(occupied.begin(), occupied.end());
-    LOG(INFO) << "balance: " << (double)max_occupied / ((double)num_edges / p);
-    size_t total_mirrors = count_mirrors();
+    LOG(INFO) << "edge balance: " << (double)max_occupied / ((double)num_edges / p);
+
+    size_t total_mirrors = collect_mirrors();
+    rep (i, p)
+        DLOG(INFO) << "vertices in partition " << i << ": " << vertex_sets[i].size();
+    std::vector<size_t> vertices_count;
+    std::transform(vertex_sets.begin(), vertex_sets.end(), std::back_inserter(vertices_count), [](std::vector<vid_t> &part) { return part.size(); });
+    size_t max_vertices = *std::max_element(vertices_count.begin(), vertices_count.end());
+    LOG(INFO) << "vertex balance: " << (double)max_vertices / ((double)total_mirrors /p);
     LOG(INFO) << "total mirrors: " << total_mirrors;
     LOG(INFO) << "replication factor: " << (double)total_mirrors / num_vertices;
     LOG(INFO) << "time used for partitioning: " << compute_timer.get_time();

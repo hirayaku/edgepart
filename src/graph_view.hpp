@@ -2,10 +2,12 @@
 
 #include <vector>
 #include <memory>
+#include "util.hpp"
 #include "dense_bitset.hpp"
 
 typedef std::vector<edge_t> GraphEdgeList;
 
+// A graph view backed up by the edgelist of a bidrected graph
 class GraphViewEdgeList
 {
   private:
@@ -52,6 +54,7 @@ class GraphViewEdgeList
     edge_cref operator[](size_t idx) const { return edge_cref(*this, idx); }
 };
 
+// A graph view backed up by the COO arrays of a bidrected graph
 class GraphViewCOO
 {
   private:

@@ -9,6 +9,7 @@
 #include <glog/logging.h>
 
 #include "threadpool11/threadpool11.hpp"
+#include "edgepart.hpp"
 
 #define rep(i, n) for (int i = 0; i < (int)(n); ++i)
 #define repv(i, n) for (vid_t i = 0; i < n; ++i)
@@ -20,7 +21,6 @@ DECLARE_string(filetype);
 DECLARE_bool(inmem);
 DECLARE_double(sample_ratio);
 
-typedef uint32_t vid_t;
 const vid_t INVALID_VID = -1;
 struct edge_t {
     vid_t first, second;
