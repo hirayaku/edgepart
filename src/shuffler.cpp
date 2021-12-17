@@ -5,8 +5,11 @@
 
 #include <stdlib.h>
 
+#include "threadpool11/threadpool11.hpp"
 #include "util.hpp"
 #include "shuffler.hpp"
+
+threadpool11::Pool pool;
 
 void Shuffler::init()
 {

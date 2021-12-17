@@ -8,7 +8,6 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
-#include "threadpool11/threadpool11.hpp"
 #include "edgepart.hpp"
 
 #define rep(i, n) for (int i = 0; i < (int)(n); ++i)
@@ -29,8 +28,6 @@ struct edge_t {
     const bool valid() { return first != INVALID_VID; }
     void remove() { first = INVALID_VID; }
 };
-
-extern threadpool11::Pool pool;
 
 void preada(int f, char *buf, size_t nbytes, size_t off);
 void reada(int f, char *buf, size_t nbytes);

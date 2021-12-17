@@ -20,25 +20,32 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -std=c++11 -pthread -fopenmp")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_EXE_LINK_FLAGS_RELEASE} -Ofast -DNDEBUG")
 
-add_subdirectory(threadpool11)
-include_directories(./threadpool11/include)
+# build a (static) library for the exposed API
+add_library(edgepart src/edgepart.cpp)
+target_include_directories(edgepart PUBLIC include)
+target_link_libraries (edgepart glog)
 
-add_executable (main
-    src/main.cpp
-    src/util.cpp
-    src/sort.cpp
-    src/graph.cpp
-    src/edgepart.cpp
-    src/sne_partitioner.cpp
-    src/random_partitioner.cpp
-    src/hsfc_partitioner.cpp
-    src/dbh_partitioner.cpp
-    src/conversions.cpp
-    src/shuffler.cpp)
-add_executable (graph2edgelist
-    src/graph2edgelist.cpp
-    src/util.cpp
-    src/conversions.cpp)
+if (NOT EDGEPART_LIB_ONLY)
+  add_subdirectory(threadpool11)
+  add_executable (main
+      src/main.cpp
+      src/util.cpp
+      src/sort.cpp
+      src/graph.cpp
+      src/sne_partitioner.cpp
+      src/random_partitioner.cpp
+      src/hsfc_partitioner.cpp
+      src/dbh_partitioner.cpp
+      src/conversions.cpp
+      src/shuffler.cpp)
+  add_executable (graph2edgelist
+      src/graph2edgelist.cpp
+      src/util.cpp
+      src/conversions.cpp)
 
-target_link_libraries (main glog gflags threadpool11)
-target_link_libraries (graph2edgelist glog gflags threadpool11)
+  target_include_directories(main PRIVATE include ./threadpool11/include)
+  target_include_directories(graph2edgelist PRIVATE include)
+
+  target_link_libraries (main glog gflags threadpool11 edgepart)
+  target_link_libraries (graph2edgelist glog gflags)
+endif()
