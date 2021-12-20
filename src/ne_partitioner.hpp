@@ -307,7 +307,6 @@ void NePartitioner<GraphViewT>::split()
     // generate the first p-1 partitions in serial
     for (bucket = 0; bucket < p - 1; bucket++) {
         std::cerr << bucket << ", ";
-        DLOG(INFO) << "sample size: " << adj_out.num_edges();
         while (occupied[bucket] < capacity) {
             vid_t d, vid;
             if (!min_heap.get_min(d, vid)) {
@@ -358,7 +357,9 @@ void NePartitioner<GraphViewT>::split()
     std::vector<size_t> vertices_count;
     std::transform(vertex_sets.begin(), vertex_sets.end(), std::back_inserter(vertices_count), [](std::vector<vid_t> &part) { return part.size(); });
     size_t max_vertices = *std::max_element(vertices_count.begin(), vertices_count.end());
-    LOG(INFO) << "vertex balance: " << (double)max_vertices / ((double)total_mirrors /p);
+    size_t min_vertices = *std::min_element(vertices_count.begin(), vertices_count.end());
+    LOG(INFO) << "vertex balance (max/avg): " << (double)max_vertices / ((double)total_mirrors /p);
+    LOG(INFO) << "vertex balance (max/min): " << (double)max_vertices / (double)min_vertices;
     LOG(INFO) << "total mirrors: " << total_mirrors;
     LOG(INFO) << "replication factor: " << (double)total_mirrors / num_vertices;
     LOG(INFO) << "time used for partitioning: " << compute_timer.get_time();

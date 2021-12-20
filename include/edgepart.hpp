@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <vector>
 
-typedef int32_t vid_t;
+typedef int64_t vid_t;
 
 /*
  * The input COO graph should be bidirected (or undirected but also unsymmetrized):
