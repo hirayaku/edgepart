@@ -103,7 +103,7 @@ class SnePartitioner : public Partitioner
         }
 
         rep (direction, 2) {
-            adjlist_t &neighbors = direction ? adj_out[vid] : adj_in[vid];
+            auto &neighbors = direction ? adj_out[vid] : adj_in[vid];
             for (size_t i = 0; i < neighbors.size();) {
                 if (sample_edges[neighbors[i].v].valid()) {
                     vid_t &u = direction ? sample_edges[neighbors[i].v].second : sample_edges[neighbors[i].v].first;

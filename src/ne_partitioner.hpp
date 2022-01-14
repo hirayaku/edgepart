@@ -98,7 +98,7 @@ class NePartitioner : public Partitioner
         }
 
         rep (direction, 2) {
-            adjlist_t &neighbors = direction ? adj_out[vid] : adj_in[vid];
+            auto &neighbors = direction ? adj_out[vid] : adj_in[vid];
             for (size_t i = 0; i < neighbors.size();) {
                 if (edges[neighbors[i].v].valid()) {
                     const vid_t &u = direction ? edges[neighbors[i].v].second : edges[neighbors[i].v].first;
@@ -327,7 +327,7 @@ void NePartitioner<GraphViewT>::split()
         // NOTE: compact adj_out & adj_in after each round
         rep (direction, 2)
             repv (vid, num_vertices) {
-                adjlist_t &neighbors = direction ? adj_out[vid] : adj_in[vid];
+                auto &neighbors = direction ? adj_out[vid] : adj_in[vid];
                 for (size_t i = 0; i < neighbors.size();) {
                     if (edges[neighbors[i].v].valid()) {
                         i++;
