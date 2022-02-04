@@ -67,6 +67,13 @@ public:
         shift_up(cur);
     }
 
+    void increase_key(KeyType key, ValueType d = 1) {
+        IdxType cur = key2idx[key];
+        CHECK(cur < n && heap[cur].second == key) << "key not found";
+        heap[cur].first += d;
+        shift_down(cur);
+    }
+
     bool remove(KeyType key) {
         IdxType cur = key2idx[key];
         if (cur >= n || heap[cur].second != key)
@@ -90,6 +97,8 @@ public:
         } else
             return false;
     }
+
+    IdxType size() const { return n; }
 
     void reserve(IdxType nelements) {
         n = 0;

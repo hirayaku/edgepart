@@ -28,6 +28,8 @@ class adjlist_t
     adjlist_t(T *adj, vid_t len = 0) : adj(adj), len(len) {}
     T *begin() { return adj; }
     T *end() { return adj + len; }
+    T *begin() const { return adj; }
+    T *end() const { return adj + len; }
     void increment() { len++; }
     void push_back(size_t data) { adj[len++].v = data; }
     size_t size() const { return len; }
