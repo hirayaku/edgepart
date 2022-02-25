@@ -137,6 +137,7 @@ class CSRGraph {
 
     CSRGraph(): nvertices(0), nedges(0), edge_offsets(0), edge_vids(0), edge_data(0) {}
 
+    // TODO: parallelize COO -> CSR transformation
     template <typename GraphViewT>
     CSRGraph(vid_t nv, size_t ne, const GraphViewT &edges, const EDATA_T *data = nullptr)
     : nvertices(nv), nedges(ne), edge_offsets(nv+1), edge_vids(ne), edge_data(ne)

@@ -20,7 +20,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -std=c++11 -pthread -fopenmp")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_EXE_LINK_FLAGS_RELEASE} -Ofast -DNDEBUG")
 
 # build a (static) library for the exposed API
-add_library(edgepart src/edgepart.cpp)
+add_library(edgepart src/edgepart.cpp src/nv_partitioner.cpp)
 target_include_directories(edgepart PUBLIC include)
 target_link_libraries (edgepart glog)
 
@@ -31,6 +31,7 @@ if (NOT EDGEPART_LIB_ONLY)
       src/util.cpp
       src/sort.cpp
       src/graph.cpp
+      src/nv_partitioner.cpp
       src/sne_partitioner.cpp
       src/random_partitioner.cpp
       src/hsfc_partitioner.cpp

@@ -107,7 +107,6 @@ class GraphViewCOO
 class GraphViewRawCOO
 {
   private:
-    // TODO: segfault if we use `const vid_t *const &` here, why?
     const vid_t *src;
     const vid_t *dst;
     const size_t array_len;

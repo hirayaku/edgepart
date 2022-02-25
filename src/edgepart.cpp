@@ -21,10 +21,10 @@ std::vector<std::vector<vid_t>> VertexPart_PartGraphCOOFromSeeds(
     for (size_t i = 0; i < seed_vertices.size(); ++i) {
         seeds[seed_assignments[i]].push_back(seed_vertices[i]);
     }
-    NvPartitioner<GraphViewRawCOO> partitioner(nv, ne, GraphViewRawCOO(row, col, ne), npart, seeds, nes);
+    NvPartitioner partitioner(nv, ne, GraphViewRawCOO(row, col, ne), npart, seeds, nes);
 
     if (nes == NE_BALANCED)
-        partitioner.split_queue();
+        partitioner.split_balanced();
     else
         partitioner.split();
     return partitioner.get_vertex_sets();
